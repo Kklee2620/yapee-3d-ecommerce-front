@@ -6,6 +6,7 @@ type Language = 'en' | 'vi' | 'zh';
 type LanguageContextType = {
   language: Language;
   setLanguage: (language: Language) => void;
+  changeLanguage: (language: Language) => void; // Added this method
   t: (key: string) => string;
 };
 
@@ -204,8 +205,12 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     return translations[language][key as keyof typeof translations[typeof language]] || key;
   };
 
+  const changeLanguage = (newLanguage: Language) => {
+    setLanguage(newLanguage);
+  };
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, changeLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );

@@ -10,6 +10,17 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Json } from "@/integrations/supabase/types";
+
+type ShippingAddress = {
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  phone: string;
+};
 
 type Order = {
   id: string;
@@ -20,15 +31,7 @@ type Order = {
   payment_status: string;
   payment_method: string | null;
   shipping_method: string | null;
-  shipping_address: {
-    firstName: string;
-    lastName: string;
-    address: string;
-    city: string;
-    postalCode: string;
-    country: string;
-    phone: string;
-  };
+  shipping_address: ShippingAddress;
   notes: string | null;
 };
 
@@ -60,7 +63,12 @@ const OrderDetail = () => {
         .single();
         
       if (error) throw error;
-      return data as Order;
+      
+      // Convert Json shipping_address to typed ShippingAddress
+      return {
+        ...data,
+        shipping_address: data.shipping_address as ShippingAddress
+      } as Order;
     },
     enabled: !!id && !!user,
   });
