@@ -1,236 +1,252 @@
 
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/context/LanguageContext';
+import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShoppingCart } from 'lucide-react';
-import { toast } from '@/components/ui/sonner';
-import ProductCard from '@/components/ProductCard';
-
-// Sample product data (would come from API in real application)
-const demoProduct = {
-  id: '1',
-  name: 'Premium Wireless Headphones',
-  price: 199.99,
-  oldPrice: 249.99,
-  description: 'Experience crystal-clear sound with our premium wireless headphones. Featuring advanced noise cancellation, extended battery life, and comfortable memory foam ear cups for all-day listening.',
-  specifications: [
-    { name: 'Battery Life', value: 'Up to 30 hours' },
-    { name: 'Connectivity', value: 'Bluetooth 5.0' },
-    { name: 'Noise Cancellation', value: 'Active' },
-    { name: 'Weight', value: '250g' },
-    { name: 'Charging', value: 'USB-C' }
-  ],
-  colors: ['Black', 'White', 'Blue'],
-  images: ['/placeholder.svg', '/placeholder.svg', '/placeholder.svg'],
-  stock: 15,
-  sku: 'WH-1000XM4',
-  category: 'Electronics'
-};
-
-// Sample related products
-const relatedProducts = [
-  {
-    id: '2',
-    name: 'Smart Watch Series 5',
-    price: 299.99,
-    image: '/placeholder.svg',
-    category: 'Electronics'
-  },
-  {
-    id: '5',
-    name: 'Wireless Gaming Mouse',
-    price: 79.99,
-    image: '/placeholder.svg',
-    category: 'Electronics'
-  },
-  {
-    id: '8',
-    name: 'Bluetooth Speaker',
-    price: 89.99,
-    image: '/placeholder.svg',
-    category: 'Electronics'
-  }
-];
+import { ShoppingCart, Package2, Loader2 } from 'lucide-react';
 
 const ProductDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { t } = useLanguage();
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedColor, setSelectedColor] = useState(0);
+  const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
-  
-  // In a real app, you would fetch the product based on the ID
-  const product = demoProduct;
-  
-  const handleAddToCart = () => {
-    toast.success(`${product.name} ${t('product.addToCart')}`);
-    // In a real application, this would add the product to the cart
+
+  const { data: product, isLoading } = useQuery({
+    queryKey: ['product', id],
+    queryFn: async () => {
+      if (!id) return null;
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          category:categories(name)
+        `)
+        .eq('id', id)
+        .single();
+        
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: relatedProducts, isLoading: relatedLoading } = useQuery({
+    queryKey: ['relatedProducts', product?.category_id],
+    queryFn: async () => {
+      if (!product?.category_id) return [];
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('category_id', product.category_id)
+        .neq('id', id)
+        .limit(4);
+        
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!product?.category_id,
+  });
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (value > 0) setQuantity(value);
   };
 
-  const handleBuyNow = () => {
-    // In a real application, this would navigate to checkout
-    handleAddToCart();
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart(product.id, quantity);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-10 px-4 md:px-6 lg:px-8 flex justify-center items-center min-h-[50vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!product) {
-    return <div className="container mx-auto py-12 px-4">Product not found</div>;
+    return (
+      <div className="container mx-auto py-10 px-4 md:px-6 lg:px-8">
+        <h1 className="text-3xl font-bold">{t('productDetail.notFound')}</h1>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-        {/* Product Images */}
-        <div className="space-y-4">
-          <div className="aspect-square bg-muted rounded-lg overflow-hidden">
-            <img 
-              src={product.images[selectedImage]} 
-              alt={product.name} 
-              className="object-cover w-full h-full"
-            />
-          </div>
-          <div className="flex space-x-2">
-            {product.images.map((image, index) => (
-              <div 
-                key={index}
-                className={`cursor-pointer border-2 ${
-                  selectedImage === index ? 'border-primary' : 'border-transparent'
-                } rounded`}
-                onClick={() => setSelectedImage(index)}
-              >
-                <img 
-                  src={image} 
-                  alt={`${product.name} view ${index + 1}`} 
-                  className="w-16 h-16 object-cover"
-                />
-              </div>
-            ))}
-          </div>
+    <div className="container mx-auto py-10 px-4 md:px-6 lg:px-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        {/* Product Image */}
+        <div className="aspect-square bg-muted rounded-lg overflow-hidden">
+          <img
+            src={product.image_url || '/placeholder.svg'}
+            alt={product.name}
+            className="object-cover w-full h-full"
+          />
         </div>
-        
-        {/* Product Details */}
+
+        {/* Product Info */}
         <div className="space-y-6">
           <div>
+            {product.category && (
+              <div className="text-sm text-muted-foreground mb-2">
+                {product.category.name}
+              </div>
+            )}
             <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-            <div className="flex items-baseline space-x-2">
-              <span className="text-2xl font-bold">${product.price.toFixed(2)}</span>
-              {product.oldPrice && (
-                <span className="text-muted-foreground line-through">${product.oldPrice.toFixed(2)}</span>
-              )}
-              {product.oldPrice && (
-                <span className="bg-primary/10 text-primary px-2 py-1 rounded text-sm font-medium">
-                  Save ${(product.oldPrice - product.price).toFixed(2)}
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-2xl font-bold">
+                ${product.price.toFixed(2)}
+              </span>
+              {product.compare_price && (
+                <span className="text-muted-foreground line-through">
+                  ${product.compare_price.toFixed(2)}
                 </span>
               )}
             </div>
           </div>
-          
-          {/* Color Selection */}
-          <div>
-            <h3 className="font-medium mb-2">{t('product.color')}</h3>
-            <div className="flex space-x-2">
-              {product.colors.map((color, index) => (
-                <div
-                  key={color}
-                  className={`cursor-pointer border-2 ${
-                    selectedColor === index ? 'border-primary' : 'border-transparent'
-                  } rounded p-2`}
-                  onClick={() => setSelectedColor(index)}
+
+          {/* Product Availability */}
+          <div className="flex items-center gap-2">
+            <div className={`w-3 h-3 rounded-full ${product.inventory_count > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+            <span>
+              {product.inventory_count > 0
+                ? t('productDetail.inStock')
+                : t('productDetail.outOfStock')}
+            </span>
+          </div>
+
+          {/* Product Description */}
+          <p className="text-muted-foreground">{product.description}</p>
+
+          {/* Quantity and Add to Cart */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <span>{t('productDetail.quantity')}</span>
+              <div className="flex items-center">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => quantity > 1 && setQuantity(quantity - 1)}
+                  disabled={quantity <= 1}
                 >
-                  <span className="block px-3">{color}</span>
-                </div>
-              ))}
+                  -
+                </Button>
+                <input
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={handleQuantityChange}
+                  className="w-16 text-center border-y border-input h-10"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setQuantity(quantity + 1)}
+                  disabled={product.inventory_count && quantity >= product.inventory_count}
+                >
+                  +
+                </Button>
+              </div>
             </div>
-          </div>
-          
-          {/* Quantity Selector */}
-          <div>
-            <h3 className="font-medium mb-2">{t('product.quantity')}</h3>
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="outline" 
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="h-10 w-10 p-0"
+
+            <div className="flex gap-4">
+              <Button
+                size="lg"
+                onClick={handleAddToCart}
+                disabled={product.inventory_count === 0}
+                className="flex-1"
               >
-                −
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                {t('productDetail.addToCart')}
               </Button>
-              <span className="font-medium text-lg">{quantity}</span>
-              <Button 
-                variant="outline" 
-                onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                className="h-10 w-10 p-0"
-              >
-                +
-              </Button>
-              <span className="text-muted-foreground ml-2">
-                {product.stock} {t('product.inStock')}
-              </span>
             </div>
-          </div>
-          
-          {/* Add to Cart and Buy Now buttons */}
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 pt-4">
-            <Button 
-              onClick={handleAddToCart}
-              className="three-d-button flex-1 text-lg py-6"
-            >
-              <ShoppingCart className="mr-2 h-5 w-5" />
-              {t('product.addToCart')}
-            </Button>
-            <Button 
-              onClick={handleBuyNow}
-              variant="outline"
-              className="flex-1 text-lg py-6 hover-rotate"
-            >
-              {t('product.buyNow')}
-            </Button>
-          </div>
-          
-          {/* Additional Info */}
-          <div className="pt-4">
-            <div className="flex justify-between py-2 border-b">
-              <span className="text-muted-foreground">{t('product.sku')}</span>
-              <span>{product.sku}</span>
-            </div>
-            <div className="flex justify-between py-2 border-b">
-              <span className="text-muted-foreground">Category</span>
-              <span>{product.category}</span>
+
+            {/* Shipping Info */}
+            <div className="flex items-start gap-3 text-sm text-muted-foreground rounded-lg border p-4 mt-4">
+              <Package2 className="h-5 w-5 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-foreground mb-1">
+                  {t('productDetail.freeShipping')}
+                </p>
+                <p>{t('productDetail.shippingInfo')}</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      
-      {/* Product Tabs */}
-      <Tabs defaultValue="description" className="max-w-4xl mx-auto">
-        <TabsList className="w-full">
-          <TabsTrigger value="description" className="flex-1">{t('product.description')}</TabsTrigger>
-          <TabsTrigger value="specifications" className="flex-1">{t('product.specifications')}</TabsTrigger>
-        </TabsList>
-        <TabsContent value="description" className="p-6 bg-card rounded-md mt-2">
-          <p className="text-lg">{product.description}</p>
-        </TabsContent>
-        <TabsContent value="specifications" className="p-6 bg-card rounded-md mt-2">
-          <div className="divide-y">
-            {product.specifications.map((spec, index) => (
-              <div key={index} className="flex justify-between py-3">
-                <span className="font-medium">{spec.name}</span>
-                <span>{spec.value}</span>
+
+      {/* Product Details Tabs */}
+      <div className="mt-16">
+        <Tabs defaultValue="description">
+          <TabsList className="mb-6">
+            <TabsTrigger value="description">{t('productDetail.description')}</TabsTrigger>
+            <TabsTrigger value="specifications">{t('productDetail.specifications')}</TabsTrigger>
+          </TabsList>
+          <TabsContent value="description" className="text-muted-foreground">
+            <div className="prose max-w-none">
+              <p>{product.description || t('productDetail.noDescription')}</p>
+            </div>
+          </TabsContent>
+          <TabsContent value="specifications">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex justify-between py-3 border-b">
+                  <span className="font-medium">{t('productDetail.brand')}</span>
+                  <span className="text-muted-foreground">Yapee</span>
+                </div>
+                <div className="flex justify-between py-3 border-b">
+                  <span className="font-medium">{t('productDetail.category')}</span>
+                  <span className="text-muted-foreground">
+                    {product.category?.name || '-'}
+                  </span>
+                </div>
+                <div className="flex justify-between py-3 border-b">
+                  <span className="font-medium">{t('productDetail.weight')}</span>
+                  <span className="text-muted-foreground">0.5 kg</span>
+                </div>
+                <div className="flex justify-between py-3 border-b">
+                  <span className="font-medium">{t('productDetail.dimensions')}</span>
+                  <span className="text-muted-foreground">20 × 10 × 5 cm</span>
+                </div>
               </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Related Products */}
+      {relatedProducts && relatedProducts.length > 0 && (
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold mb-6">{t('productDetail.relatedProducts')}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {relatedProducts.map((item) => (
+              <Card key={item.id} className="overflow-hidden">
+                <a href={`/products/${item.id}`} className="block">
+                  <div className="aspect-square bg-muted">
+                    <img
+                      src={item.image_url || '/placeholder.svg'}
+                      alt={item.name}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-medium">{item.name}</h3>
+                    <div className="mt-2 font-bold">${item.price.toFixed(2)}</div>
+                  </div>
+                </a>
+              </Card>
             ))}
           </div>
-        </TabsContent>
-      </Tabs>
-      
-      {/* Related Products */}
-      <div className="mt-16">
-        <h2 className="text-2xl font-bold mb-6">{t('product.related')}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {relatedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
         </div>
-      </div>
+      )}
     </div>
   );
 };

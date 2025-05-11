@@ -1,129 +1,260 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/context/LanguageContext';
+import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ShoppingCart, Search, User, Menu, X } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+} from '@/components/ui/navigation-menu';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import {
+  Menu,
+  Search,
+  ShoppingCart,
+  User,
+  Globe,
+  X,
+} from 'lucide-react';
 
 const Header = () => {
-  const { t, language, setLanguage } = useLanguage();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { t, changeLanguage } = useLanguage();
+  const { user, isAuthenticated, signOut } = useAuth();
+  const { cartItems, totalItems } = useCart();
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      const offset = window.scrollY;
+      setScrolled(offset > 0);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   return (
-    <header className="border-b sticky top-0 bg-background z-50 shadow-sm">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
+    <header
+      className={`sticky top-0 z-40 w-full ${
+        scrolled ? 'bg-background/95 backdrop-blur-sm shadow-sm' : 'bg-background'
+      } transition-all duration-200`}
+    >
+      <div className="container mx-auto px-4 md:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+          <div className="flex shrink-0 items-center">
+            <Link to="/" className="text-xl font-bold">
               Yapee
-            </span>
-          </Link>
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6 text-sm">
-            <Link to="/" className="hover:text-primary transition-colors">
-              {t('nav.home')}
-            </Link>
-            <Link to="/products" className="hover:text-primary transition-colors">
-              {t('nav.products')}
-            </Link>
-            <Link to="/about" className="hover:text-primary transition-colors">
-              {t('nav.about')}
-            </Link>
-            <Link to="/contact" className="hover:text-primary transition-colors">
-              {t('nav.contact')}
-            </Link>
-          </nav>
+          <NavigationMenu className="hidden md:flex">
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <Link to="/" className="block py-2 px-3 text-foreground transition-colors hover:text-primary">
+                  {t('nav.home')}
+                </Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link to="/products" className="block py-2 px-3 text-foreground transition-colors hover:text-primary">
+                  {t('nav.products')}
+                </Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link to="/about" className="block py-2 px-3 text-foreground transition-colors hover:text-primary">
+                  {t('nav.about')}
+                </Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link to="/contact" className="block py-2 px-3 text-foreground transition-colors hover:text-primary">
+                  {t('nav.contact')}
+                </Link>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
 
-          {/* Search, Cart, Account */}
-          <div className="hidden md:flex items-center space-x-4">
-            <div className="relative w-64">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder={t('nav.search')}
-                className="pl-8 pr-4 rounded-full"
-              />
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <select 
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as 'en' | 'vi' | 'zh')}
-                className="bg-transparent border border-border rounded px-2 py-1 text-sm"
-              >
-                <option value="en">EN</option>
-                <option value="vi">VI</option>
-                <option value="zh">ZH</option>
-              </select>
-            </div>
+          {/* Right Section */}
+          <div className="flex items-center gap-1 md:gap-2">
+            {/* Search Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSearchOpen(true)}
+              title={t('nav.search')}
+            >
+              <Search className="h-[1.2rem] w-[1.2rem]" />
+            </Button>
 
-            <Link to="/cart" className="p-2 rounded-full hover:bg-muted transition-colors relative">
-              <ShoppingCart className="h-5 w-5" />
-              <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-primary text-white text-xs flex items-center justify-center">
-                0
-              </span>
-            </Link>
-            
-            <Link to="/account" className="p-2 rounded-full hover:bg-muted transition-colors">
-              <User className="h-5 w-5" />
-            </Link>
-          </div>
+            {/* Language Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" title={t('nav.language')}>
+                  <Globe className="h-[1.2rem] w-[1.2rem]" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>{t('nav.selectLanguage')}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => changeLanguage('en')}>
+                  English
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => changeLanguage('vi')}>
+                  Tiếng Việt
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => changeLanguage('zh')}>
+                  中文
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          {/* Mobile Menu Button */}
-          <div className="flex items-center space-x-4 md:hidden">
-            <Link to="/cart" className="p-2 relative">
-              <ShoppingCart className="h-5 w-5" />
-              <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-primary text-white text-xs flex items-center justify-center">
-                0
-              </span>
+            {/* Shopping Cart */}
+            <Link to="/cart">
+              <Button variant="ghost" size="icon" className="relative" title={t('nav.cart')}>
+                <ShoppingCart className="h-[1.2rem] w-[1.2rem]" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
+              </Button>
             </Link>
-            <button onClick={toggleMenu} className="p-2">
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+
+            {/* User Account */}
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" title={t('nav.account')}>
+                    <User className="h-[1.2rem] w-[1.2rem]" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile">{t('nav.profile')}</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/orders">{t('nav.orders')}</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    {t('nav.logout')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/login">{t('nav.login')}</Link>
+              </Button>
+            )}
+
+            {/* Mobile Menu Button */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="md:hidden"
+                  title={t('nav.menu')}
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left">
+                <SheetHeader>
+                  <SheetTitle>Yapee</SheetTitle>
+                </SheetHeader>
+                <nav className="mt-8 flex flex-col gap-4">
+                  <SheetClose asChild>
+                    <Link 
+                      to="/" 
+                      className="block py-2 text-lg hover:text-primary"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {t('nav.home')}
+                    </Link>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Link 
+                      to="/products" 
+                      className="block py-2 text-lg hover:text-primary"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {t('nav.products')}
+                    </Link>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Link 
+                      to="/about" 
+                      className="block py-2 text-lg hover:text-primary"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {t('nav.about')}
+                    </Link>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Link 
+                      to="/contact" 
+                      className="block py-2 text-lg hover:text-primary"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {t('nav.contact')}
+                    </Link>
+                  </SheetClose>
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
+      </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden pt-4 pb-3 space-y-4 animate-fade-in">
+      {/* Search Overlay */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 bg-background/95 z-50 flex items-start p-4 sm:p-6 md:p-10">
+          <div className="container mx-auto mt-16">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">{t('nav.search')}</h2>
+              <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(false)}>
+                <X className="h-6 w-6" />
+              </Button>
+            </div>
             <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
+              <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+              <input
                 type="search"
-                placeholder={t('nav.search')}
-                className="pl-8 pr-4"
+                placeholder={t('nav.searchPlaceholder')}
+                className="w-full h-12 pl-12 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                autoFocus
               />
             </div>
-            
-            <nav className="flex flex-col space-y-3">
-              <Link to="/" className="hover:text-primary py-2">{t('nav.home')}</Link>
-              <Link to="/products" className="hover:text-primary py-2">{t('nav.products')}</Link>
-              <Link to="/about" className="hover:text-primary py-2">{t('nav.about')}</Link>
-              <Link to="/contact" className="hover:text-primary py-2">{t('nav.contact')}</Link>
-              <Link to="/account" className="hover:text-primary py-2">{t('nav.account')}</Link>
-            </nav>
-            
-            <div className="flex items-center space-x-2 pt-2">
-              <select 
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as 'en' | 'vi' | 'zh')}
-                className="bg-transparent border border-border rounded px-2 py-1 text-sm"
-              >
-                <option value="en">English</option>
-                <option value="vi">Tiếng Việt</option>
-                <option value="zh">中文</option>
-              </select>
-            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </header>
   );
 };

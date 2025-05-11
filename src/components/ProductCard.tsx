@@ -5,27 +5,27 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
-import { toast } from '@/components/ui/sonner';
+import { useCart } from '@/context/CartContext';
 
 interface ProductCardProps {
   product: {
     id: string;
     name: string;
     price: number;
-    image: string;
+    image_url: string;
     category?: string;
-    isNew?: boolean;
+    is_new?: boolean;
   };
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { t } = useLanguage();
+  const { addToCart } = useCart();
   const [isHovered, setIsHovered] = useState(false);
   
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    toast.success(`${t('product.addToCart')} ${product.name}`);
-    // In a real application, this would add the product to the cart
+    addToCart(product.id, 1);
   };
 
   return (
@@ -38,7 +38,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <Link to={`/products/${product.id}`} className="block">
           <div className="aspect-square relative overflow-hidden bg-muted">
             <img 
-              src={product.image} 
+              src={product.image_url} 
               alt={product.name} 
               className="object-cover w-full h-full transition-transform duration-500"
               style={{
@@ -50,9 +50,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 {product.category}
               </div>
             )}
-            {product.isNew && (
+            {product.is_new && (
               <div className="absolute top-2 left-2 bg-accent text-accent-foreground text-xs px-2 py-1 rounded">
-                New
+                {t('product.new')}
               </div>
             )}
           </div>
