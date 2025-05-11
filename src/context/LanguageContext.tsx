@@ -1,4 +1,3 @@
-
 import { createContext, useState, useContext, ReactNode } from 'react';
 
 type Language = 'en' | 'vi' | 'zh';
@@ -6,8 +5,8 @@ type Language = 'en' | 'vi' | 'zh';
 type LanguageContextType = {
   language: Language;
   setLanguage: (language: Language) => void;
-  changeLanguage: (language: Language) => void; // Added this method
-  t: (key: string) => string;
+  changeLanguage: (language: Language) => void; 
+  t: (key: string, params?: Record<string, any>) => string;
 };
 
 const translations = {
@@ -51,6 +50,7 @@ const translations = {
     // Cart
     'cart.title': 'Your Cart',
     'cart.empty': 'Your cart is empty',
+    'cart.emptyMessage': 'Looks like you haven\'t added anything to your cart yet.',
     'cart.continueShopping': 'Continue Shopping',
     'cart.checkout': 'Checkout',
     'cart.total': 'Total',
@@ -59,6 +59,11 @@ const translations = {
     'cart.tax': 'Tax',
     'cart.remove': 'Remove',
     'cart.update': 'Update',
+    'cart.items': '{count} items',
+    'cart.calculated': 'Calculated at checkout',
+    'cart.removeItem': 'Remove item',
+    'cart.loginToCheckout': 'Login to Checkout',
+    'cart.yourCart': 'Your Cart',
     
     // Footer
     'footer.about': 'About Yapee',
@@ -112,6 +117,7 @@ const translations = {
     // Cart
     'cart.title': 'Giỏ hàng của bạn',
     'cart.empty': 'Giỏ hàng trống',
+    'cart.emptyMessage': 'Có vẻ như bạn chưa thêm bất cứ thứ gì vào giỏ hàng.',
     'cart.continueShopping': 'Tiếp tục mua sắm',
     'cart.checkout': 'Thanh toán',
     'cart.total': 'Tổng cộng',
@@ -120,18 +126,11 @@ const translations = {
     'cart.tax': 'Thuế',
     'cart.remove': 'Xóa',
     'cart.update': 'Cập nhật',
-    
-    // Footer
-    'footer.about': 'Về Yapee',
-    'footer.terms': 'Điều khoản & Điều kiện',
-    'footer.privacy': 'Chính sách bảo mật',
-    'footer.support': 'Hỗ trợ khách hàng',
-    'footer.contact': 'Liên hệ',
-    'footer.followUs': 'Theo dõi chúng tôi',
-    'footer.newsletter': 'Đăng ký nhận tin',
-    'footer.subscribeButton': 'Đăng ký',
-    'footer.copyright': '© 2025 Yapee. Tất cả quyền được bảo lưu.',
-    'footer.paymentMethods': 'Phương thức thanh toán',
+    'cart.items': '{count} sản phẩm',
+    'cart.calculated': 'Được tính khi thanh toán',
+    'cart.removeItem': 'Xóa sản phẩm',
+    'cart.loginToCheckout': 'Đăng nhập để thanh toán',
+    'cart.yourCart': 'Giỏ hàng của bạn',
   },
   zh: {
     // Navigation
@@ -173,6 +172,7 @@ const translations = {
     // Cart
     'cart.title': '您的购物车',
     'cart.empty': '购物车是空的',
+    'cart.emptyMessage': '看起来您还没有添加任何商品到购物车。',
     'cart.continueShopping': '继续购物',
     'cart.checkout': '结账',
     'cart.total': '总计',
@@ -181,18 +181,11 @@ const translations = {
     'cart.tax': '税费',
     'cart.remove': '移除',
     'cart.update': '更新',
-    
-    // Footer
-    'footer.about': '关于 Yapee',
-    'footer.terms': '条款和条件',
-    'footer.privacy': '隐私政策',
-    'footer.support': '客户支持',
-    'footer.contact': '联系我们',
-    'footer.followUs': '关注我们',
-    'footer.newsletter': '订阅我们的通讯',
-    'footer.subscribeButton': '订阅',
-    'footer.copyright': '© 2025 Yapee. 版权所有。',
-    'footer.paymentMethods': '支付方式',
+    'cart.items': '{count} 件商品',
+    'cart.calculated': '结账时计算',
+    'cart.removeItem': '移除商品',
+    'cart.loginToCheckout': '登录以结账',
+    'cart.yourCart': '您的购物车',
   }
 };
 
@@ -201,8 +194,17 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<Language>('en');
 
-  const t = (key: string) => {
-    return translations[language][key as keyof typeof translations[typeof language]] || key;
+  const t = (key: string, params?: Record<string, any>) => {
+    let text = translations[language][key as keyof typeof translations[typeof language]] || key;
+    
+    // Replace parameters in the translation if they exist
+    if (params) {
+      Object.entries(params).forEach(([paramKey, paramValue]) => {
+        text = text.replace(`{${paramKey}}`, String(paramValue));
+      });
+    }
+    
+    return text;
   };
 
   const changeLanguage = (newLanguage: Language) => {
