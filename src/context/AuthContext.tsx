@@ -52,18 +52,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string, userData?: { firstName?: string; lastName?: string }) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signUp({
+      const { error, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            first_name: userData?.firstName || '',
-            last_name: userData?.lastName || '',
+            firstName: userData?.firstName || '',
+            lastName: userData?.lastName || '',
           },
         },
       });
 
       if (error) throw error;
+      
+      // Check if we need to create a profile manually
+      // This is a backup in case the trigger doesn't work
+      if (data.user) {
+        const { error: profileError } = await supabase.from('profiles').upsert({
+          id: data.user.id,
+          first_name: userData?.firstName || '',
+          last_name: userData?.lastName || '',
+        }, {
+          onConflict: 'id'
+        });
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+        }
+      }
+      
       toast.success('Đăng ký thành công! Hãy kiểm tra email của bạn.');
     } catch (error: any) {
       toast.error(error.message || 'Đăng ký thất bại!');
