@@ -6,11 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { useLanguage } from '@/context/LanguageContext';
 import { Loader2 } from 'lucide-react';
 
 const Login = () => {
-  const { t } = useLanguage();
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,9 +38,9 @@ const Login = () => {
     <div className="container mx-auto py-10 px-4 md:px-6 lg:px-8 flex justify-center items-center min-h-[calc(100vh-12rem)]">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">{t('auth.login')}</CardTitle>
+          <CardTitle className="text-2xl font-bold">Đăng nhập</CardTitle>
           <CardDescription>
-            {t('auth.enterCredentials')}
+            Nhập thông tin đăng nhập của bạn
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -54,7 +52,7 @@ const Login = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">{t('auth.email')}</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -66,9 +64,9 @@ const Login = () => {
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">{t('auth.password')}</Label>
+                <Label htmlFor="password">Mật khẩu</Label>
                 <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-                  {t('auth.forgotPassword')}
+                  Quên mật khẩu?
                 </Link>
               </div>
               <Input
@@ -81,15 +79,15 @@ const Login = () => {
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              {t('auth.loginButton')}
+              Đăng nhập
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
           <div className="text-sm text-muted-foreground text-center">
-            {t('auth.noAccount')}{' '}
+            Bạn chưa có tài khoản?{' '}
             <Link to="/register" className="text-primary hover:underline">
-              {t('auth.register')}
+              Đăng ký
             </Link>
           </div>
         </CardFooter>

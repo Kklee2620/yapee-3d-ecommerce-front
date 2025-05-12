@@ -6,11 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { useLanguage } from '@/context/LanguageContext';
 import { Loader2 } from 'lucide-react';
 
 const Register = () => {
-  const { t } = useLanguage();
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
@@ -34,7 +32,7 @@ const Register = () => {
     setError(null);
 
     if (formData.password !== formData.confirmPassword) {
-      setError(t('auth.passwordsDoNotMatch'));
+      setError('Mật khẩu không khớp');
       return;
     }
 
@@ -57,9 +55,9 @@ const Register = () => {
     <div className="container mx-auto py-10 px-4 md:px-6 lg:px-8 flex justify-center items-center min-h-[calc(100vh-12rem)]">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">{t('auth.register')}</CardTitle>
+          <CardTitle className="text-2xl font-bold">Đăng ký</CardTitle>
           <CardDescription>
-            {t('auth.createAccount')}
+            Tạo tài khoản mới
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -72,7 +70,7 @@ const Register = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="firstName">{t('auth.firstName')}</Label>
+                <Label htmlFor="firstName">Họ</Label>
                 <Input
                   id="firstName"
                   name="firstName"
@@ -82,7 +80,7 @@ const Register = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">{t('auth.lastName')}</Label>
+                <Label htmlFor="lastName">Tên</Label>
                 <Input
                   id="lastName"
                   name="lastName"
@@ -93,7 +91,7 @@ const Register = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">{t('auth.email')}</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 name="email"
@@ -105,7 +103,7 @@ const Register = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">{t('auth.password')}</Label>
+              <Label htmlFor="password">Mật khẩu</Label>
               <Input
                 id="password"
                 name="password"
@@ -116,7 +114,7 @@ const Register = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">{t('auth.confirmPassword')}</Label>
+              <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
@@ -128,15 +126,15 @@ const Register = () => {
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              {t('auth.registerButton')}
+              Đăng ký
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
           <div className="text-sm text-muted-foreground text-center">
-            {t('auth.alreadyHaveAccount')}{' '}
+            Đã có tài khoản?{' '}
             <Link to="/login" className="text-primary hover:underline">
-              {t('auth.login')}
+              Đăng nhập
             </Link>
           </div>
         </CardFooter>
