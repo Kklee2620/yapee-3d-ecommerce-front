@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Thiết lập listener cho trạng thái xác thực
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
-        console.log('Auth state changed:', event);
+        console.log('Trạng thái xác thực thay đổi:', event);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setLoading(false);
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Kiểm tra phiên hiện tại
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      console.log('Current session:', currentSession);
+      console.log('Phiên hiện tại:', currentSession);
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setLoading(false);
@@ -67,30 +67,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) throw error;
       
-      // Check if we need to create a profile manually
-      // This is a backup in case the trigger doesn't work
+      // Kiểm tra xem chúng ta có cần tạo profile thủ công hay không
+      // Đây là phương án dự phòng trong trường hợp trigger không hoạt động
       if (data.user) {
-        console.log('User created:', data.user);
+        console.log('Người dùng đã được tạo:', data.user);
         try {
-          const { error: profileError } = await supabase.from('profiles').upsert({
-            id: data.user.id,
-            first_name: userData?.firstName || '',
-            last_name: userData?.lastName || '',
-          }, {
-            onConflict: 'id'
-          });
-
-          if (profileError) {
-            console.error('Error creating profile:', profileError);
-          }
+          // Thêm delay nhỏ để đảm bảo trigger có thời gian thực thi
+          setTimeout(async () => {
+            try {
+              const { error: profileError } = await supabase.from('profiles').upsert({
+                id: data.user!.id,
+                first_name: userData?.firstName || '',
+                last_name: userData?.lastName || '',
+              }, {
+                onConflict: 'id'
+              });
+  
+              if (profileError) {
+                console.error('Lỗi khi tạo profile:', profileError);
+              }
+            } catch (err) {
+              console.error('Lỗi khi tạo profile:', err);
+            }
+          }, 500);
         } catch (profileErr) {
-          console.error('Error creating profile:', profileErr);
+          console.error('Lỗi khi tạo profile:', profileErr);
         }
       }
       
       toast.success('Đăng ký thành công! Hãy kiểm tra email của bạn.');
     } catch (error: any) {
-      console.error('Sign up error:', error);
+      console.error('Lỗi đăng ký:', error);
       toast.error(error.message || 'Đăng ký thất bại!');
       throw error;
     } finally {
@@ -108,7 +115,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) throw error;
     } catch (error: any) {
-      console.error('Sign in error:', error);
+      console.error('Lỗi đăng nhập:', error);
       toast.error(error.message || 'Đăng nhập thất bại!');
       throw error;
     } finally {
@@ -122,7 +129,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await supabase.auth.signOut();
       navigate('/');
     } catch (error: any) {
-      console.error('Sign out error:', error);
+      console.error('Lỗi đăng xuất:', error);
       toast.error(error.message || 'Đăng xuất thất bại!');
     } finally {
       setLoading(false);

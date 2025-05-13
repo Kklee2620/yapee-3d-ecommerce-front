@@ -39,15 +39,22 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      console.log('Registering with:', { email: formData.email, firstName: formData.firstName, lastName: formData.lastName });
+      console.log('Đăng ký với thông tin:', { 
+        email: formData.email, 
+        firstName: formData.firstName, 
+        lastName: formData.lastName 
+      });
+      
       await signUp(formData.email, formData.password, {
         firstName: formData.firstName,
         lastName: formData.lastName,
       });
+      
+      // Nếu đăng ký thành công, chuyển hướng đến trang đăng nhập
       navigate('/login', { replace: true });
     } catch (error: any) {
-      console.error('Registration error:', error);
-      setError(error.message || 'Database error saving new user');
+      console.error('Lỗi đăng ký:', error);
+      setError(error.message || 'Lỗi cơ sở dữ liệu khi lưu người dùng mới');
     } finally {
       setIsLoading(false);
     }
