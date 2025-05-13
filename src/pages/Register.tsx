@@ -39,13 +39,15 @@ const Register = () => {
     setIsLoading(true);
 
     try {
+      console.log('Registering with:', { email: formData.email, firstName: formData.firstName, lastName: formData.lastName });
       await signUp(formData.email, formData.password, {
         firstName: formData.firstName,
         lastName: formData.lastName,
       });
       navigate('/login', { replace: true });
     } catch (error: any) {
-      setError(error.message);
+      console.error('Registration error:', error);
+      setError(error.message || 'Database error saving new user');
     } finally {
       setIsLoading(false);
     }
