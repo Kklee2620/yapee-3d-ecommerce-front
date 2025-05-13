@@ -1,3 +1,4 @@
+
 import { createContext, useState, useContext, ReactNode } from 'react';
 
 type Language = 'en' | 'vi' | 'zh';
@@ -21,6 +22,13 @@ const translations = {
     'nav.account': 'Account',
     'nav.login': 'Login',
     'nav.register': 'Register',
+    'nav.language': 'Language',
+    'nav.selectLanguage': 'Select Language',
+    'nav.menu': 'Menu',
+    'nav.profile': 'Profile',
+    'nav.orders': 'Orders',
+    'nav.logout': 'Logout',
+    'nav.searchPlaceholder': 'Search for products...',
     
     // Homepage
     'home.hero.title': 'Experience Safe and Secure Shopping',
@@ -76,6 +84,40 @@ const translations = {
     'footer.subscribeButton': 'Subscribe',
     'footer.copyright': '© 2025 Yapee. All rights reserved.',
     'footer.paymentMethods': 'Payment Methods',
+    
+    // Error Pages
+    'error.pageNotFound': 'Oops! Page not found',
+    'error.pageNotFoundMessage': 'The page you are looking for might have been removed or is temporarily unavailable.',
+    'error.returnHome': 'Return to Home',
+    'error.title': 'Error',
+    'error.fetchAddresses': 'Failed to fetch addresses',
+    'error.addAddress': 'Failed to add address',
+    'error.deleteAddress': 'Failed to delete address',
+    'error.setDefaultAddress': 'Failed to set default address',
+    
+    // Profile & Addresses
+    'profile.addresses': 'My Addresses',
+    'profile.address': 'Address',
+    'profile.defaultAddress': 'Default',
+    'profile.noAddresses': 'You have no saved addresses',
+    'profile.addNewAddress': 'Add New Address',
+    'profile.addNewAddressDescription': 'Add a new shipping address to your account',
+    'profile.addressLine': 'Address Line',
+    'profile.city': 'City',
+    'profile.country': 'Country',
+    'profile.setAsDefault': 'Set as Default Address',
+    
+    // General Actions
+    'actions.save': 'Save',
+    'actions.cancel': 'Cancel',
+    'actions.delete': 'Delete',
+    'actions.edit': 'Edit',
+    
+    // Success Messages
+    'success.title': 'Success',
+    'success.addressAdded': 'Address added successfully',
+    'success.addressDeleted': 'Address deleted successfully',
+    'success.defaultAddressSet': 'Default address updated successfully',
   },
   vi: {
     // Navigation
@@ -88,6 +130,13 @@ const translations = {
     'nav.account': 'Tài khoản',
     'nav.login': 'Đăng nhập',
     'nav.register': 'Đăng ký',
+    'nav.language': 'Ngôn ngữ',
+    'nav.selectLanguage': 'Chọn ngôn ngữ',
+    'nav.menu': 'Menu',
+    'nav.profile': 'Hồ sơ',
+    'nav.orders': 'Đơn hàng',
+    'nav.logout': 'Đăng xuất',
+    'nav.searchPlaceholder': 'Tìm kiếm sản phẩm...',
     
     // Homepage
     'home.hero.title': 'Trải nghiệm mua sắm an toàn và bảo mật',
@@ -131,6 +180,52 @@ const translations = {
     'cart.removeItem': 'Xóa sản phẩm',
     'cart.loginToCheckout': 'Đăng nhập để thanh toán',
     'cart.yourCart': 'Giỏ hàng của bạn',
+    
+    // Footer
+    'footer.about': 'Về Yapee',
+    'footer.terms': 'Điều khoản & Điều kiện',
+    'footer.privacy': 'Chính sách bảo mật',
+    'footer.support': 'Hỗ trợ khách hàng',
+    'footer.contact': 'Liên hệ với chúng tôi',
+    'footer.followUs': 'Theo dõi chúng tôi',
+    'footer.newsletter': 'Đăng ký nhận bản tin',
+    'footer.subscribeButton': 'Đăng ký',
+    'footer.copyright': '© 2025 Yapee. Tất cả quyền được bảo lưu.',
+    'footer.paymentMethods': 'Phương thức thanh toán',
+    
+    // Error Pages
+    'error.pageNotFound': 'Rất tiếc! Không tìm thấy trang',
+    'error.pageNotFoundMessage': 'Trang bạn đang tìm kiếm có thể đã bị xóa hoặc tạm thời không khả dụng.',
+    'error.returnHome': 'Quay lại Trang chủ',
+    'error.title': 'Lỗi',
+    'error.fetchAddresses': 'Không thể tải danh sách địa chỉ',
+    'error.addAddress': 'Không thể thêm địa chỉ mới',
+    'error.deleteAddress': 'Không thể xóa địa chỉ',
+    'error.setDefaultAddress': 'Không thể đặt địa chỉ mặc định',
+    
+    // Profile & Addresses
+    'profile.addresses': 'Địa chỉ của tôi',
+    'profile.address': 'Địa chỉ',
+    'profile.defaultAddress': 'Mặc định',
+    'profile.noAddresses': 'Bạn chưa có địa chỉ nào được lưu',
+    'profile.addNewAddress': 'Thêm địa chỉ mới',
+    'profile.addNewAddressDescription': 'Thêm địa chỉ giao hàng mới vào tài khoản của bạn',
+    'profile.addressLine': 'Địa chỉ',
+    'profile.city': 'Thành phố',
+    'profile.country': 'Quốc gia',
+    'profile.setAsDefault': 'Đặt làm địa chỉ mặc định',
+    
+    // General Actions
+    'actions.save': 'Lưu',
+    'actions.cancel': 'Hủy',
+    'actions.delete': 'Xóa',
+    'actions.edit': 'Sửa',
+    
+    // Success Messages
+    'success.title': 'Thành công',
+    'success.addressAdded': 'Đã thêm địa chỉ thành công',
+    'success.addressDeleted': 'Đã xóa địa chỉ thành công',
+    'success.defaultAddressSet': 'Đã cập nhật địa chỉ mặc định thành công',
   },
   zh: {
     // Navigation
@@ -143,6 +238,13 @@ const translations = {
     'nav.account': '账户',
     'nav.login': '登录',
     'nav.register': '注册',
+    'nav.language': '语言',
+    'nav.selectLanguage': '选择语言',
+    'nav.menu': '菜单',
+    'nav.profile': '个人资料',
+    'nav.orders': '订单',
+    'nav.logout': '退出登录',
+    'nav.searchPlaceholder': '搜索产品...',
     
     // Homepage
     'home.hero.title': '体验安全可靠的购物',
@@ -186,6 +288,52 @@ const translations = {
     'cart.removeItem': '移除商品',
     'cart.loginToCheckout': '登录以结账',
     'cart.yourCart': '您的购物车',
+    
+    // Footer
+    'footer.about': '关于 Yapee',
+    'footer.terms': '条款和条件',
+    'footer.privacy': '隐私政策',
+    'footer.support': '客户支持',
+    'footer.contact': '联系我们',
+    'footer.followUs': '关注我们',
+    'footer.newsletter': '订阅我们的新闻通讯',
+    'footer.subscribeButton': '订阅',
+    'footer.copyright': '© 2025 Yapee. 保留所有权利。',
+    'footer.paymentMethods': '支付方式',
+    
+    // Error Pages
+    'error.pageNotFound': '哎呀！找不到页面',
+    'error.pageNotFoundMessage': '您正在寻找的页面可能已被删除或暂时不可用。',
+    'error.returnHome': '返回首页',
+    'error.title': '错误',
+    'error.fetchAddresses': '无法获取地址',
+    'error.addAddress': '无法添加地址',
+    'error.deleteAddress': '无法删除地址',
+    'error.setDefaultAddress': '无法设置默认地址',
+    
+    // Profile & Addresses
+    'profile.addresses': '我的地址',
+    'profile.address': '地址',
+    'profile.defaultAddress': '默认',
+    'profile.noAddresses': '您还没有保存任何地址',
+    'profile.addNewAddress': '添加新地址',
+    'profile.addNewAddressDescription': '向您的账户添加新的收货地址',
+    'profile.addressLine': '地址行',
+    'profile.city': '城市',
+    'profile.country': '国家',
+    'profile.setAsDefault': '设为默认地址',
+    
+    // General Actions
+    'actions.save': '保存',
+    'actions.cancel': '取消',
+    'actions.delete': '删除',
+    'actions.edit': '编辑',
+    
+    // Success Messages
+    'success.title': '成功',
+    'success.addressAdded': '地址添加成功',
+    'success.addressDeleted': '地址删除成功',
+    'success.defaultAddressSet': '默认地址更新成功',
   }
 };
 

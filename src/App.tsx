@@ -22,6 +22,7 @@ import Checkout from "./pages/Checkout";
 import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
 import OrderDetail from "./pages/OrderDetail";
+import Addresses from "./pages/Addresses";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -65,6 +66,11 @@ const App = () => (
                     <Route path="/orders/:id" element={
                       <ProtectedRoute>
                         <OrderDetail />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/addresses" element={
+                      <ProtectedRoute>
+                        <Addresses />
                       </ProtectedRoute>
                     } />
                     <Route path="*" element={<NotFound />} />
