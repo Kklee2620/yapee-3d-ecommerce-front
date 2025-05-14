@@ -40,7 +40,7 @@ type AddressFormValues = z.infer<typeof addressFormSchema>;
 
 // Interface cho địa chỉ
 interface Address {
-  id: number;
+  id: string;
   user_id: string;
   address: string;
   city: string;
@@ -73,14 +73,15 @@ const Addresses = () => {
       if (!user) return;
 
       try {
+        // Sử dụng truy vấn SQL thay vì truy cập bảng trực tiếp
         const { data, error } = await supabase
-          .from("addresses")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("is_default", { ascending: false });
+          .from('addresses')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('is_default', { ascending: false });
 
         if (error) throw error;
-        setAddresses(data || []);
+        setAddresses(data as Address[] || []);
       } catch (error: any) {
         console.error("Error fetching addresses:", error);
         toast({
@@ -101,13 +102,15 @@ const Addresses = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase.from("addresses").insert({
-        user_id: user.id,
-        address: data.address,
-        city: data.city,
-        country: data.country,
-        is_default: data.isDefault,
-      });
+      // Sử dụng truy vấn SQL thay vì truy cập bảng trực tiếp
+      const { error } = await supabase
+        .rpc('insert_address', {
+          p_user_id: user.id,
+          p_address: data.address,
+          p_city: data.city,
+          p_country: data.country,
+          p_is_default: data.isDefault,
+        });
 
       if (error) throw error;
 
@@ -122,13 +125,12 @@ const Addresses = () => {
       
       // Tải lại danh sách địa chỉ
       const { data: updatedAddresses, error: fetchError } = await supabase
-        .from("addresses")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("is_default", { ascending: false });
+        .rpc('get_user_addresses', {
+          p_user_id: user.id
+        });
         
       if (fetchError) throw fetchError;
-      setAddresses(updatedAddresses || []);
+      setAddresses(updatedAddresses as Address[] || []);
       
     } catch (error: any) {
       console.error("Error adding address:", error);
@@ -141,12 +143,13 @@ const Addresses = () => {
   };
 
   // Xử lý xóa địa chỉ
-  const handleDeleteAddress = async (id: number) => {
+  const handleDeleteAddress = async (id: string) => {
     try {
+      // Sử dụng truy vấn SQL thay vì truy cập bảng trực tiếp
       const { error } = await supabase
-        .from("addresses")
-        .delete()
-        .eq("id", id);
+        .rpc('delete_address', {
+          p_id: id
+        });
 
       if (error) throw error;
 
@@ -168,19 +171,14 @@ const Addresses = () => {
   };
 
   // Xử lý đặt địa chỉ mặc định
-  const handleSetDefault = async (id: number) => {
+  const handleSetDefault = async (id: string) => {
     try {
-      // Đặt tất cả địa chỉ thành không phải mặc định
-      await supabase
-        .from("addresses")
-        .update({ is_default: false })
-        .eq("user_id", user?.id);
-
-      // Đặt địa chỉ được chọn thành mặc định
+      // Sử dụng truy vấn SQL thay vì truy cập bảng trực tiếp
       const { error } = await supabase
-        .from("addresses")
-        .update({ is_default: true })
-        .eq("id", id);
+        .rpc('set_default_address', {
+          p_user_id: user?.id,
+          p_id: id
+        });
 
       if (error) throw error;
 
@@ -363,3 +361,4 @@ const Addresses = () => {
 };
 
 export default Addresses;
+
